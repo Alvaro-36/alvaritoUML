@@ -1,50 +1,75 @@
 # Configuración para Deploy en Vercel
 
-Este proyecto requiere variables de entorno para la integración con Google Drive.
+Este proyecto usa Google Drive OAuth 2.0 para guardar diagramas en la nube.
 
-## Variables de entorno requeridas en Vercel:
+## ⚡ Deploy Rápido (Recomendado)
 
-1. Ve a tu proyecto en Vercel
-2. Settings → Environment Variables
-3. Agrega las siguientes variables:
+1. Haz push de tu código a GitHub
+2. Conecta tu repositorio en Vercel
+3. Deploy automático - ¡Listo! 🎉
 
-```
-GOOGLE_CLIENT_ID=tu_client_id_aqui.apps.googleusercontent.com
-GOOGLE_API_KEY=tu_api_key_aqui
-```
+**No necesitas configurar variables de entorno** porque las credenciales ya están en `google-drive-config.prod.js`.
 
-## Cómo obtener las credenciales:
+## 🔒 Seguridad con OAuth 2.0
+
+Las credenciales en `google-drive-config.prod.js` son seguras porque:
+
+1. **OAuth 2.0 requiere dominios autorizados** en Google Cloud Console
+2. Solo funcionan desde los dominios que tu configures
+3. Es el método estándar para aplicaciones client-side
+
+## ⚙️ Configuración en Google Cloud Console
+
+Para que funcione en tu dominio de Vercel:
+
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
+2. Selecciona tu proyecto
+3. Ve a **APIs y servicios** → **Credenciales**
+4. Edita tu **OAuth 2.0 Client ID**
+5. En **Orígenes autorizados de JavaScript**, agrega:
+   - `http://localhost:8080` (desarrollo)
+   - `https://tu-proyecto.vercel.app` (reemplaza con tu URL de Vercel)
+
+## 🔑 Cómo obtener las credenciales (si necesitas crear nuevas):
 
 1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
 2. Crea un proyecto o selecciona uno existente
-3. Habilita la API de Google Drive
-4. Ve a "Credenciales" y crea:
-   - **OAuth 2.0 Client ID** (para GOOGLE_CLIENT_ID)
-   - **API Key** (para GOOGLE_API_KEY)
+3. Habilita la **Google Drive API**
+4. Ve a **Credenciales** → **Crear credenciales**:
+   - **OAuth 2.0 Client ID** (para CLIENT_ID)
+   - **API Key** (para API_KEY)
+5. Actualiza `google-drive-config.prod.js` con tus nuevas credenciales
 
-## Configurar OAuth en Google Cloud:
+## 📝 Variables de Entorno (Opcional - Método Alternativo)
 
-Para que funcione en Vercel, agrega estos dominios autorizados:
-- `http://localhost:8080` (desarrollo)
-- `https://tu-proyecto.vercel.app` (producción)
+Si prefieres usar variables de entorno en Vercel en lugar del archivo:
 
-En Google Cloud Console → Credenciales → OAuth 2.0 Client ID:
-- **Orígenes autorizados de JavaScript**: Agrega tu dominio de Vercel
-- **URIs de redireccionamiento autorizados**: Agrega tu dominio de Vercel
+1. Ve a tu proyecto en Vercel → Settings → Environment Variables
+2. Agrega:
+   ```
+   GOOGLE_CLIENT_ID=tu_client_id
+   GOOGLE_API_KEY=tu_api_key
+   ```
+3. Modifica `google-drive-config.prod.js` para leer estas variables
 
-## Deploy:
+## 🚀 Deploy:
 
 ```bash
-# Deploy a Vercel
+# Deploy directo
 vercel
 
-# O conecta tu repo de GitHub y Vercel hará deploy automático
+# O simplemente push a GitHub y Vercel hará deploy automático
+git push
 ```
 
-## Notas de seguridad:
+## 📊 Diferencias Desarrollo vs Producción
 
-- ✅ `google-drive-config.js` NO se sube a Git (está en .gitignore)
-- ✅ `google-drive-config-loader.js` SÍ se sube (no contiene credenciales)
-- ✅ Las credenciales solo existen en:
-  - Tu máquina local (en google-drive-config.js)
-  - Variables de entorno de Vercel (configuradas manualmente)
+- **Desarrollo**: Usa `google-drive-config.js` (no en Git, tus credenciales personales)
+- **Producción**: Usa `google-drive-config.prod.js` (en Git, credenciales para producción)
+
+## ✅ Checklist pre-deploy:
+
+- [ ] Credenciales agregadas a `google-drive-config.prod.js`
+- [ ] Dominio de Vercel agregado en Google Cloud Console
+- [ ] Código pusheado a GitHub
+- [ ] Proyecto conectado en Vercel

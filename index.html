@@ -271,11 +271,23 @@
   
   <!-- Google Drive Integration -->
   <!-- IMPORTANTE: Orden de carga -->
-  <!-- 1. Cargar loader (SEGURO para Git/Vercel) -->
-  <script src="components/preview/menu/google-drive-config-loader.js"></script>
   
-  <!-- 2. Cargar config local solo si existe (Desarrollo) -->
-  <script src="components/preview/menu/google-drive-config.js" onerror="console.log('google-drive-config.js no encontrado (normal en producción)')"></script>
+  <!-- 1. Intentar cargar config de desarrollo primero (puede fallar en producción) -->
+  <script src="components/preview/menu/google-drive-config.js" onerror="console.log('⚠️ google-drive-config.js no encontrado, cargando configuración de producción...')"></script>
+  
+  <!-- 2. Si falla el anterior, cargar config de producción -->
+  <script>
+    // Si GOOGLE_DRIVE_CONFIG no está definido después de intentar cargar el archivo de desarrollo
+    // cargar el archivo de producción
+    if (typeof window.GOOGLE_DRIVE_CONFIG === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'components/preview/menu/google-drive-config.prod.js';
+      script.onerror = function() {
+        console.error('❌ No se pudo cargar ninguna configuración de Google Drive');
+      };
+      document.head.appendChild(script);
+    }
+  </script>
   
   <!-- 3. Cargar integración -->
   <script src="components/preview/menu/google-drive-integration.js"></script>

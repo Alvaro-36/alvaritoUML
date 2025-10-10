@@ -6,7 +6,9 @@ package-lock.json
 pnpm-lock.yaml
 
 # Credenciales de Google Drive (IMPORTANTE: No subir al repositorio)
+# Archivo de desarrollo con credenciales locales
 components/preview/menu/google-drive-config.js
+# NOTA: google-drive-config.prod.js SÍ se sube (es para producción)
 credentials.env
 
 # IDE
