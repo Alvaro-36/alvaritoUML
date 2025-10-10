@@ -10,35 +10,51 @@
 
 // Verificar que GOOGLE_DRIVE_CONFIG esté definido
 if (typeof GOOGLE_DRIVE_CONFIG === 'undefined') {
-  console.error('❌ GOOGLE_DRIVE_CONFIG no está definido!');
-  console.error('Asegúrate de:');
-  console.error('1. Tener el archivo google-drive-config.js en desarrollo, O');
-  console.error('2. Configurar GOOGLE_CLIENT_ID y GOOGLE_API_KEY en variables de entorno para producción');
-  throw new Error('GOOGLE_DRIVE_CONFIG no está definido');
-}
+  console.warn('⚠️ GOOGLE_DRIVE_CONFIG no está definido - Funcionalidad de Google Drive desactivada');
+  console.info('Para habilitar Google Drive:');
+  console.info('1. Desarrollo: Crea el archivo google-drive-config.js');
+  console.info('2. Producción: Configura GOOGLE_CLIENT_ID y GOOGLE_API_KEY en variables de entorno');
+  
+  // Ocultar el botón de Google Drive
+  document.addEventListener('DOMContentLoaded', () => {
+    const authButton = document.getElementById('google-auth-button');
+    const dropdown = document.getElementById('files-dropdown');
+    if (authButton) authButton.style.display = 'none';
+    if (dropdown) dropdown.style.display = 'none';
+  });
+  
+  // Definir funciones vacías para evitar errores
+  window.handleGoogleAuthClick = () => {
+    console.warn('Google Drive no está configurado');
+  };
+  window.actualizarArchivoSeleccionado = () => {
+    console.warn('Google Drive no está configurado');
+  };
+  
+  // No continuar con la inicialización
+} else {
+  // Configuración de Google API
+  const CLIENT_ID = GOOGLE_DRIVE_CONFIG.CLIENT_ID;
+  const API_KEY = GOOGLE_DRIVE_CONFIG.API_KEY;
+  const DISCOVERY_DOC = GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC;
+  const SCOPES = GOOGLE_DRIVE_CONFIG.SCOPES;
 
-// Configuración de Google API
-const CLIENT_ID = GOOGLE_DRIVE_CONFIG.CLIENT_ID;
-const API_KEY = GOOGLE_DRIVE_CONFIG.API_KEY;
-const DISCOVERY_DOC = GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC;
-const SCOPES = GOOGLE_DRIVE_CONFIG.SCOPES;
+  console.log('✅ Google Drive configurado correctamente');
+  console.log('   Client ID:', CLIENT_ID ? CLIENT_ID.substring(0, 20) + '...' : 'NO DEFINIDO');
+  console.log('   API Key:', API_KEY ? API_KEY.substring(0, 10) + '...' : 'NO DEFINIDO');
 
-console.log('✅ Google Drive configurado correctamente');
-console.log('   Client ID:', CLIENT_ID ? CLIENT_ID.substring(0, 20) + '...' : 'NO DEFINIDO');
-console.log('   API Key:', API_KEY ? API_KEY.substring(0, 10) + '...' : 'NO DEFINIDO');
+  let tokenClient;
+  let gapiInited = false;
+  let gisInited = false;
+  let workFolderId = null; // ID de la carpeta de trabajo
+  window.selectedFileId = null; // ID del archivo actualmente seleccionado (global)
 
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
-let workFolderId = null; // ID de la carpeta de trabajo
-window.selectedFileId = null; // ID del archivo actualmente seleccionado (global)
-
-/**
- * Callback después de cargar api.js
- */
-function gapiLoaded() {
-  gapi.load('client', initializeGapiClient);
-}
+  /**
+   * Callback después de cargar api.js
+   */
+  function gapiLoaded() {
+    gapi.load('client', initializeGapiClient);
+  }
 
 /**
  * Callback después de que el cliente API está cargado
@@ -466,13 +482,14 @@ async function actualizarArchivoSeleccionado(contenido) {
   }
 }
 
-// Cargar las librerías de Google al cargar la página
-if (typeof gapi !== 'undefined') {
-  gapiLoaded();
-}
+  // Cargar las librerías de Google al cargar la página
+  if (typeof gapi !== 'undefined') {
+    gapiLoaded();
+  }
 
-//AGREGAR QUE CUANDO SE TOQUE EL BOTON DE CAMBIAR DOCUMETNO SE GUARDE EL PROGRESO
-// const saveBeforeExitListener = document.querySelector("#files-dropdown").addEventListener("click", alert("TEST"))
-// Exponer funciones globalmente
-window.handleGoogleAuthClick = handleGoogleAuthClick;
-window.actualizarArchivoSeleccionado = actualizarArchivoSeleccionado;
+  //AGREGAR QUE CUANDO SE TOQUE EL BOTON DE CAMBIAR DOCUMETNO SE GUARDE EL PROGRESO
+  // const saveBeforeExitListener = document.querySelector("#files-dropdown").addEventListener("click", alert("TEST"))
+  // Exponer funciones globalmente
+  window.handleGoogleAuthClick = handleGoogleAuthClick;
+  window.actualizarArchivoSeleccionado = actualizarArchivoSeleccionado;
+}
