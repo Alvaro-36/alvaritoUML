@@ -270,30 +270,66 @@
   </div>
   
   <!-- Google Drive Integration -->
-  <!-- IMPORTANTE: Orden de carga -->
-  
-  <!-- 1. Intentar cargar config de desarrollo primero (puede fallar en producción) -->
-  <script src="components/preview/menu/google-drive-config.js" onerror="console.log('⚠️ google-drive-config.js no encontrado, cargando configuración de producción...')"></script>
-  
-  <!-- 2. Si falla el anterior, cargar config de producción -->
   <script>
-    // Si GOOGLE_DRIVE_CONFIG no está definido después de intentar cargar el archivo de desarrollo
-    // cargar el archivo de producción
-    if (typeof window.GOOGLE_DRIVE_CONFIG === 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'components/preview/menu/google-drive-config.prod.js';
-      script.onerror = function() {
-        console.error('❌ No se pudo cargar ninguna configuración de Google Drive');
+    // Cargar configuración de Google Drive de forma secuencial
+    (function() {
+      // Intentar cargar config de desarrollo
+      const devScript = document.createElement('script');
+      devScript.src = 'components/preview/menu/google-drive-config.js';
+      
+      devScript.onerror = function() {
+        console.log('⚠️ google-drive-config.js no encontrado, cargando configuración de producción...');
+        
+        // Si falla, cargar config de producción
+        const prodScript = document.createElement('script');
+        prodScript.src = 'components/preview/menu/google-drive-config.prod.js';
+        
+        prodScript.onload = function() {
+          console.log('✅ Configuración de producción cargada');
+          loadGoogleDriveIntegration();
+        };
+        
+        prodScript.onerror = function() {
+          console.error('❌ No se pudo cargar ninguna configuración de Google Drive');
+        };
+        
+        document.head.appendChild(prodScript);
       };
-      document.head.appendChild(script);
-    }
+      
+      devScript.onload = function() {
+        console.log('✅ Configuración de desarrollo cargada');
+        loadGoogleDriveIntegration();
+      };
+      
+      document.head.appendChild(devScript);
+      
+      // Función para cargar la integración solo cuando el config esté listo
+      function loadGoogleDriveIntegration() {
+        const integrationScript = document.createElement('script');
+        integrationScript.src = 'components/preview/menu/google-drive-integration.js';
+        integrationScript.onload = function() {
+          // Cargar Google APIs después de la integración
+          const gapiScript = document.createElement('script');
+          gapiScript.src = 'https://apis.google.com/js/api.js';
+          gapiScript.async = true;
+          gapiScript.defer = true;
+          gapiScript.onload = function() {
+            if (typeof gapiLoaded === 'function') gapiLoaded();
+          };
+          document.head.appendChild(gapiScript);
+          
+          const gsiScript = document.createElement('script');
+          gsiScript.src = 'https://accounts.google.com/gsi/client';
+          gsiScript.async = true;
+          gsiScript.defer = true;
+          gsiScript.onload = function() {
+            if (typeof gisLoaded === 'function') gisLoaded();
+          };
+          document.head.appendChild(gsiScript);
+        };
+        document.head.appendChild(integrationScript);
+      }
+    })();
   </script>
-  
-  <!-- 3. Cargar integración -->
-  <script src="components/preview/menu/google-drive-integration.js"></script>
-  
-  <!-- Cargar Google APIs después de nuestra configuración -->
-  <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-  <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
 </html>

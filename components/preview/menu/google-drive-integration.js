@@ -13,19 +13,35 @@ if (typeof GOOGLE_DRIVE_CONFIG === 'undefined') {
   console.error('❌ GOOGLE_DRIVE_CONFIG no está definido!');
   console.error('Asegúrate de:');
   console.error('1. Tener el archivo google-drive-config.js en desarrollo, O');
-  console.error('2. Configurar GOOGLE_CLIENT_ID y GOOGLE_API_KEY en variables de entorno para producción');
-  throw new Error('GOOGLE_DRIVE_CONFIG no está definido');
+  console.error('2. Tener el archivo google-drive-config.prod.js en producción');
+  // NO lanzar error, esperar a que se cargue
+  var GOOGLE_DRIVE_CONFIG = null;
 }
 
-// Configuración de Google API
-const CLIENT_ID = GOOGLE_DRIVE_CONFIG.CLIENT_ID;
-const API_KEY = GOOGLE_DRIVE_CONFIG.API_KEY;
-const DISCOVERY_DOC = GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC;
-const SCOPES = GOOGLE_DRIVE_CONFIG.SCOPES;
+// Configuración de Google API (se inicializarán cuando GOOGLE_DRIVE_CONFIG esté disponible)
+let CLIENT_ID;
+let API_KEY;
+let DISCOVERY_DOC;
+let SCOPES;
 
-console.log('✅ Google Drive configurado correctamente');
-console.log('   Client ID:', CLIENT_ID ? CLIENT_ID.substring(0, 20) + '...' : 'NO DEFINIDO');
-console.log('   API Key:', API_KEY ? API_KEY.substring(0, 10) + '...' : 'NO DEFINIDO');
+// Inicializar configuración cuando esté disponible
+function initGoogleDriveConfig() {
+  if (GOOGLE_DRIVE_CONFIG) {
+    CLIENT_ID = GOOGLE_DRIVE_CONFIG.CLIENT_ID;
+    API_KEY = GOOGLE_DRIVE_CONFIG.API_KEY;
+    DISCOVERY_DOC = GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC;
+    SCOPES = GOOGLE_DRIVE_CONFIG.SCOPES;
+    
+    console.log('✅ Google Drive configurado correctamente');
+    console.log('   Client ID:', CLIENT_ID ? CLIENT_ID.substring(0, 20) + '...' : 'NO DEFINIDO');
+    console.log('   API Key:', API_KEY ? API_KEY.substring(0, 10) + '...' : 'NO DEFINIDO');
+    return true;
+  }
+  return false;
+}
+
+// Intentar inicializar inmediatamente
+initGoogleDriveConfig();
 
 let tokenClient;
 let gapiInited = false;
