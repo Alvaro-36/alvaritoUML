@@ -1,0 +1,21 @@
+{
+  "name": "alvaritouml",
+  "version": "1.0.0",
+  "description": "PlantUML frontend application using official PlantUML server",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -c-1 --cors",
+    "dev": "npx http-server -p 8080 -c-1 --cors -o index.html"
+  },
+  "keywords": [
+    "plantuml",
+    "uml",
+    "diagrams",
+    "frontend"
+  ],
+  "author": "AlvaritoUML",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
