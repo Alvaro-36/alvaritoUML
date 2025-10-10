@@ -270,8 +270,14 @@
   </div>
   
   <!-- Google Drive Integration -->
-  <!-- IMPORTANTE: Primero cargamos nuestra configuración, LUEGO los scripts de Google -->
-  <script src="components/preview/menu/google-drive-config.js"></script>
+  <!-- IMPORTANTE: Orden de carga -->
+  <!-- 1. Cargar loader (SEGURO para Git/Vercel) -->
+  <script src="components/preview/menu/google-drive-config-loader.js"></script>
+  
+  <!-- 2. Cargar config local solo si existe (Desarrollo) -->
+  <script src="components/preview/menu/google-drive-config.js" onerror="console.log('google-drive-config.js no encontrado (normal en producción)')"></script>
+  
+  <!-- 3. Cargar integración -->
   <script src="components/preview/menu/google-drive-integration.js"></script>
   
   <!-- Cargar Google APIs después de nuestra configuración -->

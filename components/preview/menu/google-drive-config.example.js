@@ -1,5 +1,5 @@
 /**
- * Configuración de Google Drive API
+ * Configuración de Google Drive API - PLANTILLA
  * 
  * INSTRUCCIONES:
  * 1. Copia este archivo y renómbralo a: google-drive-config.js
@@ -13,9 +13,15 @@
  * 4. Crea credenciales (OAuth 2.0 Client ID y API Key)
  */
 
+// Intentar cargar desde variables de entorno primero (producción)
+// Si no existen, usar las credenciales definidas aquí (desarrollo)
 const GOOGLE_DRIVE_CONFIG = {
-  CLIENT_ID: 'TU_CLIENT_ID_AQUI.apps.googleusercontent.com',
-  API_KEY: 'TU_API_KEY_AQUI',
+  CLIENT_ID: window.GOOGLE_CLIENT_ID || 'TU_CLIENT_ID_AQUI.apps.googleusercontent.com',
+  API_KEY: window.GOOGLE_API_KEY || 'TU_API_KEY_AQUI',
   DISCOVERY_DOC: 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
-  SCOPES: 'https://www.googleapis.com/auth/drive'
+  SCOPES: 'https://www.googleapis.com/auth/drive.file'
 };
+
+// Exponer globalmente para que google-drive-integration.js pueda acceder
+window.GOOGLE_DRIVE_CONFIG = GOOGLE_DRIVE_CONFIG;
+

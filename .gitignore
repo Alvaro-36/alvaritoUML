@@ -7,6 +7,7 @@ pnpm-lock.yaml
 
 # Credenciales de Google Drive (IMPORTANTE: No subir al repositorio)
 components/preview/menu/google-drive-config.js
+credentials.env
 
 # IDE
 .vscode/
