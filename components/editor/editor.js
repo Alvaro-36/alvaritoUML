@@ -36,7 +36,7 @@ const { setEditorValue, initEditor } = (function() {
           }
           if (!document.appConfig) {
             document.appConfig = {
-              diagramPreviewType: "png",
+              diagramPreviewType: "svg",
               editorWatcherTimeout: 500,
               autoRefreshState: "idle"
             };
@@ -55,11 +55,10 @@ const { setEditorValue, initEditor } = (function() {
             const encodedDiagram = encodePlantUML(code);
             console.log('✅ Diagram encoded locally:', encodedDiagram);
             document.querySelector('#url').value = `https://editor.plantuml.com/map/${encodedDiagram}`;
-            document.querySelector('#diagram-png').src = `https://img.plantuml.biz/plantuml/png/${encodedDiagram}`
-            console.log(`https://img.plantuml.biz/plantuml/png/${encodedDiagram}`);
+            document.querySelector('#diagram-png').src = `https://img.plantuml.biz/plantuml/svg/${encodedDiagram}`
 
             //Actualizar los botones
-            document.querySelector('#diagram-png').src = `https://img.plantuml.biz/plantuml/png/${encodedDiagram}`
+            document.querySelector('#diagram-png').src = `https://img.plantuml.biz/plantuml/svg/${encodedDiagram}`
             
             // Actualizar appData
             document.appData.encodedDiagram = encodedDiagram;
@@ -102,11 +101,10 @@ const { setEditorValue, initEditor } = (function() {
       let timer = 0;
       model.onDidChangeContent(() => {
 
-        //Consolelog de debug, borrar despues
+
         const currentContent = model.getValue();
         const currentURL = document.getElementById("url").value
-        console.log("Texto ingresado:", currentContent);
-        console.log("URL actual: ", currentURL );
+ 
 
         // Actualizar archivo en Google Drive si hay uno seleccionado
         if (typeof actualizarArchivoSeleccionado === 'function' && window.selectedFileId) {
@@ -190,40 +188,155 @@ async function downloadImageAsPDF(imgSrc, filename = 'imagen.pdf') {
     alert('Error: La librería jsPDF no está cargada. Por favor recarga la página.');
     return;
   }
-  
   const { jsPDF } = window.jspdf;
 
-  // 2) Cargar imagen (maneja CORS si el servidor lo permite)
+  // Helper: detectar si la fuente es SVG
+  function isSvgSource(src) {
+    if (!src) return false;
+    const s = src.trim();
+    return s.startsWith('<svg') || s.startsWith('data:image/svg+xml') || s.endsWith('.svg') || /\/svg(\?|$)/i.test(s);
+  }
+
+  // Factor de escala para rasterizar (aumenta la resolución del PNG resultante)
+  const scaleFactor = Math.max(1, (window.devicePixelRatio || 1) * 2);
+
+  // Si es SVG, intentamos rasterizarlo en alta resolución
+  if (isSvgSource(imgSrc)) {
+    try {
+      let svgText = null;
+      // 1) Obtener el texto SVG
+      if (imgSrc.startsWith('data:image/svg+xml')) {
+        // Data URI (puede estar URI encoded o base64)
+        const comma = imgSrc.indexOf(',');
+        const meta = imgSrc.substring(0, comma);
+        const data = imgSrc.substring(comma + 1);
+        if (/;base64/.test(meta)) {
+          svgText = atob(data);
+        } else {
+          svgText = decodeURIComponent(data);
+        }
+      } else if (imgSrc.trim().startsWith('<svg')) {
+        svgText = imgSrc;
+      } else {
+        // Remote URL: fetch the SVG text (puede fallar por CORS)
+        const resp = await fetch(imgSrc);
+        if (!resp.ok) throw new Error('Error al obtener SVG: ' + resp.status);
+        svgText = await resp.text();
+      }
+
+      // 2) Extraer ancho/alto desde viewBox o atributos width/height
+      let svgWidth = 800, svgHeight = 600;
+      const viewBoxMatch = svgText.match(/viewBox\s*=\s*"([\d.\-\s]+)"/i);
+      if (viewBoxMatch) {
+        const parts = viewBoxMatch[1].trim().split(/\s+/).map(Number);
+        if (parts.length === 4) {
+          svgWidth = parts[2];
+          svgHeight = parts[3];
+        }
+      } else {
+        const wMatch = svgText.match(/width\s*=\s*"([\d.]+)"/i);
+        const hMatch = svgText.match(/height\s*=\s*"([\d.]+)"/i);
+        if (wMatch) svgWidth = parseFloat(wMatch[1]);
+        if (hMatch) svgHeight = parseFloat(hMatch[1]);
+      }
+
+      // Si siguen sin definirse, intentar detectar unidades en px dentro del contenido
+      if (!svgWidth || !svgHeight) {
+        const rectMatch = svgText.match(/<rect[^>]*width\s*=\s*"([\d.]+)"[^>]*height\s*=\s*"([\d.]+)"/i);
+        if (rectMatch) {
+          svgWidth = parseFloat(rectMatch[1]);
+          svgHeight = parseFloat(rectMatch[2]);
+        }
+      }
+
+      // 3) Preparar un SVG serializado que preserve la escala
+      // Aseguramos que el SVG tenga atributos width/height en px y viewBox
+      let svgForRender = svgText;
+      if (!/viewBox\s*=/.test(svgForRender)) {
+        svgForRender = svgForRender.replace(/<svg([^>]*)>/i, (m, attrs) => {
+          return `<svg${attrs} viewBox=\"0 0 ${svgWidth} ${svgHeight}\">`;
+        });
+      }
+      // Forzar width/height en px para evitar layouts responsivos
+      if (!/\bwidth\s*=/.test(svgForRender)) {
+        svgForRender = svgForRender.replace(/<svg([^>]*)>/i, (m, attrs) => `<svg${attrs} width=\"${svgWidth}px\" height=\"${svgHeight}px\">`);
+      }
+
+      // 4) Crear Image a partir del SVG y dibujar en canvas con escala
+      const blob = new Blob([svgForRender], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      const imgLoaded = new Promise((res, rej) => {
+        img.onload = () => res();
+        img.onerror = (e) => rej(new Error('No se pudo cargar el SVG como imagen (CORS o contenido inválido).'));
+      });
+      img.src = url;
+      await imgLoaded;
+
+      // Crear canvas con alta resolución
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(svgWidth * scaleFactor));
+      canvas.height = Math.max(1, Math.round(svgHeight * scaleFactor));
+      // Establecer tamaño CSS para que drawImage escale correctamente
+      canvas.style.width = `${svgWidth}px`;
+      canvas.style.height = `${svgHeight}px`;
+      const ctx = canvas.getContext('2d');
+      // Mejorar calidad al escalar
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+
+      const pngDataUrl = canvas.toDataURL('image/png');
+
+      // 5) Crear PDF manteniendo el tamaño físico (puntos) correspondiente al tamaño SVG original
+      const imgWidthInPoints = svgWidth * 0.75; // 1 px ≈ 0.75 pt
+      const imgHeightInPoints = svgHeight * 0.75;
+      const pdf = new jsPDF({
+        orientation: imgWidthInPoints > imgHeightInPoints ? 'landscape' : 'portrait',
+        unit: 'pt',
+        format: [imgWidthInPoints, imgHeightInPoints]
+      });
+      pdf.addImage(pngDataUrl, 'PNG', 0, 0, imgWidthInPoints, imgHeightInPoints);
+      pdf.save(filename);
+      return;
+    } catch (err) {
+      console.warn('⚠️ Error al procesar SVG. Se intentará el flujo PNG como fallback:', err);
+      // continuar al flujo PNG a continuación
+    }
+  }
+
+  // Flujo para imágenes raster (PNG/JPEG) — ahora con factor de escala para mejorar calidad
   const img = new Image();
   img.crossOrigin = 'anonymous';
   const loaded = new Promise((res, rej) => {
     img.onload = () => res();
-    img.onerror = () => rej(new Error('No se pudo cargar la imagen (CORS o ruta inválida).'));
+    img.onerror = (e) => rej(new Error('No se pudo cargar la imagen (CORS o ruta inválida).'));
   });
   img.src = imgSrc;
   await loaded;
 
-  // 3) Pasar a PNG (canvas) para insertarlo en el PDF
+  // Crear canvas con mayor resolución para mejorar calidad
   const canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scaleFactor));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scaleFactor));
+  canvas.style.width = `${img.naturalWidth}px`;
+  canvas.style.height = `${img.naturalHeight}px`;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   const pngDataUrl = canvas.toDataURL('image/png');
 
-  // 4) Crear PDF con el tamaño exacto de la imagen (sin márgenes ni escalado)
   // Convertir píxeles a puntos (1 píxel ≈ 0.75 puntos)
   const imgWidthInPoints = img.naturalWidth * 0.75;
   const imgHeightInPoints = img.naturalHeight * 0.75;
-  
-  // Crear PDF con tamaño personalizado (exactamente el tamaño de la imagen)
   const pdf = new jsPDF({ 
     orientation: imgWidthInPoints > imgHeightInPoints ? 'landscape' : 'portrait',
     unit: 'pt', 
     format: [imgWidthInPoints, imgHeightInPoints]
   });
-  
-  // Agregar la imagen sin escalar, ocupando toda la página
   pdf.addImage(pngDataUrl, 'PNG', 0, 0, imgWidthInPoints, imgHeightInPoints);
   pdf.save(filename);
 }
