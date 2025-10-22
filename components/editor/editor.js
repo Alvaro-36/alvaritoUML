@@ -53,7 +53,7 @@ const { setEditorValue, initEditor } = (function() {
           // Codificar localmente usando encodePlantUML en lugar de hacer POST al servidor
           try {
             const encodedDiagram = encodePlantUML(code);
-            console.log('✅ Diagram encoded locally:', encodedDiagram);
+
             document.querySelector('#url').value = `https://editor.plantuml.com/map/${encodedDiagram}`;
             document.querySelector('#diagram-png').src = `https://img.plantuml.biz/plantuml/svg/${encodedDiagram}`
 
@@ -71,7 +71,7 @@ const { setEditorValue, initEditor } = (function() {
               synchronize: true,
             });
           } catch (error) {
-            console.error('❌ Error encoding diagram:', error);
+            console.error('Error encoding diagram:', error);
           }
         }
         const updatePlantumlLanguageMarkers = (function() {
@@ -113,7 +113,7 @@ const { setEditorValue, initEditor } = (function() {
           window.driveUpdateTimer = setTimeout(() => {
             // Guardar el contenido del campo URL (codigo sin codificar)
             actualizarArchivoSeleccionado(currentContent)
-              .then(() => console.log('Archivo actualizado en Google Drive con URL:', currentURL))
+              .then(() => console.log('Archivo actualizado en Google Drive con URL'))
               .catch(err => console.error('Error actualizando en Drive:', err));
           }, 2000); // Esperar 2 segundos de inactividad antes de guardar
         }
@@ -176,9 +176,46 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("No se encontró la imagen del diagrama o la ruta está vacía.");
       }
     });
-    console.log('✅ Event listener del botón PDF agregado correctamente');
-  } else {
-    console.error('❌ No se encontró el elemento #pdfButton');
+  }
+
+  // Botón para actualizar diagrama manualmente
+  const botonActualizar = document.querySelector("#refreshButton"); // Cambia el selector según tu HTML
+  
+  if (botonActualizar) {
+    botonActualizar.addEventListener('click', () => {
+      if (document.editor) {
+        const currentCode = document.editor.getModel().getValue();
+        const numberOfDiagramPages = getNumberOfDiagramPagesFromCode(currentCode);
+        let index = document.appData?.index;
+        
+        if (index === undefined || numberOfDiagramPages === 1) {
+          index = undefined;
+        } else if (index >= numberOfDiagramPages) {
+          index = numberOfDiagramPages - 1;
+        }
+        
+        try {
+          const encodedDiagram = encodePlantUML(currentCode);
+          
+          document.querySelector('#url').value = `https://editor.plantuml.com/map/${encodedDiagram}`;
+          document.querySelector('#diagram-png').src = `https://img.plantuml.biz/plantuml/svg/${encodedDiagram}`;
+          
+          // Actualizar appData
+          if (!document.appData) document.appData = {};
+          document.appData.encodedDiagram = encodedDiagram;
+          document.appData.numberOfDiagramPages = numberOfDiagramPages;
+          document.appData.index = index;
+          
+          sendMessage({
+            sender: "refreshButton",
+            data: { encodedDiagram, numberOfDiagramPages, index },
+            synchronize: true,
+          });
+        } catch (error) {
+          console.error('Error encoding diagram:', error);
+        }
+      }
+    });
   }
 });
 

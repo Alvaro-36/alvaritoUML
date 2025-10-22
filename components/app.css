@@ -63,8 +63,10 @@ select {
 }
 .pdfBtn{
   padding: 1em;
-  border: none;
   border-radius: 5em;
+  border: none;
+  margin-bottom: 0.25em;
+  margin-top: 0.25em;
   margin-right: 2em;
   background-color: white;
   color: black;
@@ -123,12 +125,19 @@ select {
   margin-right: auto;
   text-align: center;
 }
+.header > h1:nth-child(1) {
+  font-size: 1.5em;
+}
+.header > p:nth-child(2) {
+  font-size: 0.8em;
+}
+
 .main {
-  margin: 1% 5%;
+  margin: 0% 1.25%;
   z-index: 1;
 }
 .main > div {
-  margin: 0 1.75%;
+  margin: 0 0.25%;
 }
 .main > div:first-child {
   margin-left: 0;

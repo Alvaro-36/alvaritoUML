@@ -10,7 +10,6 @@ if (!document.appData) {
     index: undefined,
     numberOfDiagramPages: 1
   };
-  console.log("✅ document.appData inicializado:", document.appData);
 }
 
 // Inicializar document.appConfig
@@ -20,5 +19,4 @@ if (!document.appConfig) {
     editorWatcherTimeout: 500, // 500ms de espera antes de actualizar
     autoRefreshState: "idle"
   };
-  console.log("✅ document.appConfig inicializado:", document.appConfig);
 }

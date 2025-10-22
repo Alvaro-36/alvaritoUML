@@ -88,13 +88,13 @@
         </div>
         
         <!-- Monaco Editor -->
-        <div class="flex-main monaco-editor-container">
-          <textarea id="initCode" name="initCode" style="display: none;">@startuml&#10;Bob -&gt; Alice : hello&#10;@enduml</textarea>
-          <div id="monaco-editor"></div>
-          
-   
-          
-        </div>
+          <div class="flex-main monaco-editor-container">
+            <textarea id="initCode" name="initCode" style="display: none;">@startuml&#10;Bob -&gt; Alice : hello&#10;@enduml</textarea>
+            <div id="monaco-editor"></div>
+            
+    
+            
+          </div>
       </div>
       
       <!-- Preview -->
@@ -104,8 +104,8 @@
           <!-- Preview Menu -->
           <div class="preview-menu">
             <div class="diagram-links flex-columns">
-                <button class="pdfBtn" id="pdfButton">Download PDF</button>
-             
+                <button class="pdfBtn" id="pdfButton">Descargar PDF</button>
+                <button class="pdfBtn" id="refreshButton">Actualizar Diagrama</button>
               
               <!-- Botón de Google Drive -->
               <div>
@@ -297,7 +297,6 @@
       };
       
       devScript.onload = function() {
-        console.log('✅ Configuración de desarrollo cargada');
         loadGoogleDriveIntegration();
       };
       

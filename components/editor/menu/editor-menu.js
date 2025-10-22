@@ -11,5 +11,10 @@ function initEditorMenu() {
     navigator.clipboard?.writeText(code).catch(() => {});
   }
   // add listener
-  document.getElementById("menu-item-editor-code-copy").addEventListener("click", copyCodeToClipboard);
+  const copyButton = document.getElementById("menu-item-editor-code-copy");
+  if (copyButton) {
+    copyButton.addEventListener("click", copyCodeToClipboard);
+  } else {
+    console.warn('Elemento "menu-item-editor-code-copy" no encontrado en el DOM');
+  }
 }
