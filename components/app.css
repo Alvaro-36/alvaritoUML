@@ -73,6 +73,14 @@ select {
   font-weight: bold;
   cursor: pointer;
 }
+
+#fullscreen-button {
+  position: relative;
+  right: 2%;
+  padding: 1em 1.2em;
+  min-width: 3.5em;
+}
+
 /************* ruler *************/
 .hr {
   padding: 1rem 0;

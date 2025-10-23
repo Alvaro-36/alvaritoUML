@@ -13,3 +13,16 @@
     flex: none;
   }
 }
+#fullscreen-button {
+  bottom: 2px;
+  right: 2px;
+  display: flex;
+  max-width: none;
+  width: auto;
+  margin-left: auto;
+
+
+}
+#fullscreen-button img{
+  min-width: 1.5em;
+}

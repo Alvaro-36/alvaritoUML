@@ -217,6 +217,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Botón fullscreen
+  const botonFullscreen = document.querySelector("#fullscreen-button");
+  if (botonFullscreen) {
+    botonFullscreen.addEventListener('click', () => {
+      const editorContainer = document.getElementById("editor-main-container");
+      const imgElement = botonFullscreen.querySelector('img');
+      
+      if (editorContainer.style.display === 'none') {
+        editorContainer.style.display = '';
+        if (imgElement) {
+          imgElement.src = 'assets/actions/enlarge-increase-icon.svg';
+        }
+      } else {
+        editorContainer.style.display = 'none';
+        if (imgElement) {
+          imgElement.src = 'assets/actions/reduce-decrease-icon.svg';
+        }
+      }
+    });
+  }
 });
 
 async function downloadImageAsPDF(imgSrc, filename = 'imagen.pdf') {
