@@ -316,7 +316,7 @@ async function cargarArchivoEnEditor(fileId, fileName) {
     });
 
     const contenido = response.body;
-    console.log('Contenido del archivo cargado:', contenido.substring(0, 200));
+    //console.log('Contenido del archivo cargado:', contenido.substring(0, 200));
     
     // Actualizar el editor de Monaco directamente con el contenido tal cual
     if (document.editor && typeof setEditorValue === 'function') {
@@ -352,8 +352,8 @@ async function crearNuevoArchivo() {
     // Obtener el URL actual de la página (campo url que contiene el código encoded)
     let contenidoActual = '';
     //Cambiar para que se instancie con el contenidop del editor
-    const urlInput = document.getElementById('url');
-    if (urlInput && urlInput.value) {
+    const urlInput = document.editor.getModel().getValue();
+    if (urlInput) {
       contenidoActual = urlInput.value;
     }
     

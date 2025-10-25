@@ -285,12 +285,12 @@
         prodScript.src = 'components/preview/menu/google-drive-config.prod.js';
         
         prodScript.onload = function() {
-          console.log('✅ Configuración de producción cargada');
+          console.log('Configuración de producción cargada');
           loadGoogleDriveIntegration();
         };
         
         prodScript.onerror = function() {
-          console.error('❌ No se pudo cargar ninguna configuración de Google Drive');
+          console.error('No se pudo cargar ninguna configuración de Google Drive');
         };
         
         document.head.appendChild(prodScript);

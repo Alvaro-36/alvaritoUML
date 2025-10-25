@@ -115,6 +115,8 @@ const { setEditorValue, initEditor } = (function() {
             actualizarArchivoSeleccionado(currentContent)
               .then(() => console.log('Archivo actualizado en Google Drive con URL'))
               .catch(err => console.error('Error actualizando en Drive:', err));
+
+              //AGREGAER EN EL CATCH PARA QUE SE GUARDE EN LOCAL STORAGE
           }, 2000); // Esperar 2 segundos de inactividad antes de guardar
         }
 
