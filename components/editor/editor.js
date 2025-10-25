@@ -224,14 +224,23 @@ document.addEventListener('DOMContentLoaded', () => {
     botonFullscreen.addEventListener('click', () => {
       const editorContainer = document.getElementById("editor-main-container");
       const imgElement = botonFullscreen.querySelector('img');
+      const header = document.querySelector(".header");
       
       if (editorContainer.style.display === 'none') {
         editorContainer.style.display = '';
+        header.style.maxHeight = "500px";
+        header.style.opacity = "1";
+        header.style.visibility = "visible";
+        header.style.transform = "translateY(0)";
         if (imgElement) {
           imgElement.src = 'assets/actions/enlarge-increase-icon.svg';
         }
       } else {
         editorContainer.style.display = 'none';
+        header.style.maxHeight = "0";
+        header.style.opacity = "0";
+        header.style.visibility = "hidden";
+        header.style.transform = "translateY(-100%)";
         if (imgElement) {
           imgElement.src = 'assets/actions/reduce-decrease-icon.svg';
         }

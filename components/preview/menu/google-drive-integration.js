@@ -10,10 +10,7 @@
 
 // Verificar que GOOGLE_DRIVE_CONFIG esté definido
 if (typeof GOOGLE_DRIVE_CONFIG === 'undefined') {
-  console.error('❌ GOOGLE_DRIVE_CONFIG no está definido!');
-  console.error('Asegúrate de:');
-  console.error('1. Tener el archivo google-drive-config.js en desarrollo, O');
-  console.error('2. Tener el archivo google-drive-config.prod.js en producción');
+  console.error('GOOGLE_DRIVE_CONFIG no está definido!');
   // NO lanzar error, esperar a que se cargue
   var GOOGLE_DRIVE_CONFIG = null;
 }
@@ -31,10 +28,7 @@ function initGoogleDriveConfig() {
     API_KEY = GOOGLE_DRIVE_CONFIG.API_KEY;
     DISCOVERY_DOC = GOOGLE_DRIVE_CONFIG.DISCOVERY_DOC;
     SCOPES = GOOGLE_DRIVE_CONFIG.SCOPES;
-    
-    console.log('✅ Google Drive configurado correctamente');
-    console.log('   Client ID:', CLIENT_ID ? CLIENT_ID.substring(0, 20) + '...' : 'NO DEFINIDO');
-    console.log('   API Key:', API_KEY ? API_KEY.substring(0, 10) + '...' : 'NO DEFINIDO');
+    console.log('Google Drive configurado correctamente');
     return true;
   }
   return false;
@@ -357,6 +351,7 @@ async function crearNuevoArchivo() {
 
     // Obtener el URL actual de la página (campo url que contiene el código encoded)
     let contenidoActual = '';
+    //Cambiar para que se instancie con el contenidop del editor
     const urlInput = document.getElementById('url');
     if (urlInput && urlInput.value) {
       contenidoActual = urlInput.value;
@@ -478,6 +473,7 @@ async function actualizarArchivoSeleccionado(contenido) {
     return response.result;
   } catch (err) {
     console.error('Error actualizando archivo:', err);
+    //Agregar guardado en localhost
     throw err;
   }
 }
